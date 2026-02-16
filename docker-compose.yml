@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sanctum-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - db
+      - redis
+    networks:
+      - sanctum-network
+    user: 1000:1000
+
+  db:
+    image: postgres:17-alpine
+    container_name: sanctum-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sanctum
+    ports:
+      - "54321:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - sanctum-network
+
+  redis:
+    image: redis:alpine
+    container_name: sanctum-redis
+    networks:
+      - sanctum-network
+
+networks:
+  sanctum-network:
+    driver: bridge
+
+volumes:
+  pgdata:
