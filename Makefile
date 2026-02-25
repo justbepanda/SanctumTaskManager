@@ -3,13 +3,12 @@
 DCSERVICE=app
 
 # Установка
-setup: prepare-env build install-deps migrate-f
-	@echo "🚀 Task Manager API is ready at http://localhost:8000"
+init: prepare-env build install-deps migrate-f
+	@echo "🚀 Project is ready at http://localhost:8000"
 
 # Подготовка конфига (только если его нет)
 prepare-env:
 	@test -f .env || cp .env.example .env
-	@echo "✅ .env file prepared"
 
 # Сборка и запуск
 build:
@@ -29,8 +28,8 @@ up:
 	docker compose up -d
 	@echo "🚀 Task Manager API is ready at http://localhost:8000"
 
-down:
-	docker compose down -v
+stop:
+	docker compose stop
 
 shell:
 	docker compose exec ${DCSERVICE} bash
