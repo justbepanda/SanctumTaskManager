@@ -3,7 +3,6 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -12,8 +11,6 @@ use Tests\TestCase;
  */
 class AuthApiTest extends TestCase
 {
-    use RefreshDatabase;
-
     /**
      * Проверяет успешную регистрацию пользователя и выдачу токена
      */
