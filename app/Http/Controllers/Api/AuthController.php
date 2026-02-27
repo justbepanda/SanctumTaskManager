@@ -50,10 +50,19 @@ class AuthController extends Controller
         $token = $user->createToken(
             name: 'auth_token',
             abilities: ['*']
-        )->plainTextToken;
+        );
+
+        $accessToken = $token->accessToken;
+
+        $device = $request->string('device') ?? $request->userAgent() ?? 'unknown';
+
+        $accessToken->forceFill([
+            'device_name' => $device,
+            'user_agent' => $request->userAgent(),
+        ])->save();
 
         return response()->json([
-            'token' => $token,
+            'token' => $token->plainTextToken,
         ]);
     }
 

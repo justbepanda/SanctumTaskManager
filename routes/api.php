@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\TaskController;
+use Illuminate\Http\Request;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -32,4 +34,14 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
         'name' => $request->user()->name,
         'email' => $request->user()->email,
     ]);
+});
+
+/**
+ * Устройства пользователя
+ */
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('devices', [DeviceController::class, 'index']);
+    Route::delete('devices/{tokenId}', [DeviceController::class, 'destroy']);
+    Route::delete('devices', [DeviceController::class, 'logoutOtherDevices']);
 });
