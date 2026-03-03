@@ -5,6 +5,7 @@ namespace Tests\Feature\Task;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -73,7 +74,8 @@ class TaskApiAbilitiesTest extends TestCase
         $user = User::factory()->create();
         $token = $user->createToken('full-token', ['task:update','task:delete'])->plainTextToken;
 
-        $task = Task::factory()->create(['title' => 'Old Title']);
+        // Проверка через Policy
+        $task = Task::factory()->create(['title' => 'Old Title', 'user_id' => $user->id]);
 
         // update
         $response = $this->withHeader('Authorization', "Bearer $token")
@@ -90,5 +92,24 @@ class TaskApiAbilitiesTest extends TestCase
 
         $response->assertOk();
         $this->assertDatabaseCount('tasks', 0);
+    }
+
+    /**
+     * @return void
+     */
+    public function test_user_without_ability_cannot_update_task(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        Sanctum::actingAs($user, ['task:read']);
+
+        $response = $this->putJson("/api/tasks/{$task->id}", [
+            'title' => 'New',
+        ]);
+
+        $response->assertForbidden();
     }
 }

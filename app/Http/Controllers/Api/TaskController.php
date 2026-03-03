@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class TaskController extends Controller
 {
@@ -32,6 +33,8 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task): JsonResponse
     {
+        Gate::authorize('update', $task);
+
         $task->update($request->only('title', 'description'));
 
         return response()->json($task);
