@@ -112,4 +112,25 @@ class TaskApiAbilitiesTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    /**
+     * Токен не должен работать после истечения срока.
+     */
+    public function test_expired_token_cannot_access_api(): void
+    {
+        $user = User::factory()->create();
+
+        $token = $user->createToken(
+            'test',
+            ['task:read'],
+            now()->subDay(), // уже просрочен
+        );
+
+        $response = $this->withHeader(
+            'Authorization',
+            'Bearer ' . $token->plainTextToken
+        )->getJson('/api/tasks');
+
+        $response->assertUnauthorized();
+    }
 }

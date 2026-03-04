@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -49,7 +50,8 @@ class AuthController extends Controller
 
         $token = $user->createToken(
             name: 'auth_token',
-            abilities: ['*']
+            abilities: ['*'],
+            expiresAt: now()->addDays(7),
         );
 
         $accessToken = $token->accessToken;
@@ -63,6 +65,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token->plainTextToken,
+            'expires_at' => $accessToken->expires_at,
         ]);
     }
 
@@ -126,5 +129,44 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Token deleted',
         ]);
+    }
+
+    /**
+     * Выдаёт mobile токен с ограниченными правами.
+     */
+    public function issueMobileToken(User $user, string $deviceName): string
+    {
+        $token = $user->createToken(
+            name: "mobile:{$deviceName}",
+            abilities: [
+                'task:read',
+                'task:create',
+            ],
+            expiresAt: now()->addDays(30),
+        );
+
+        return $token->plainTextToken;
+    }
+
+    /**
+     * Удаляет токен конкретного устройства.
+     */
+    public function revokeDevice(User $user, int $tokenId): void
+    {
+        $user->tokens()
+            ->where('id', $tokenId)
+            ->delete();
+    }
+
+    /**
+     * Удаляет текущий токен.
+     */
+    public function logoutCurrentDevice(Request $request): JsonResponse
+    {
+        $request->user()
+            ->currentAccessToken()
+            ?->delete();
+
+        return response()->json();
     }
 }

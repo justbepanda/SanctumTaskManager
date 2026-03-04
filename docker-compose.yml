@@ -47,6 +47,38 @@ services:
     networks:
       - sanctum-network
 
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sanctum-scheduler
+    command: php artisan schedule:work
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - db
+      - redis
+    networks:
+      - sanctum-network
+    user: 1000:1000
+    restart: always
+
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sanctum-worker
+    command: php artisan queue:work
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - db
+      - redis
+    networks:
+      - sanctum-network
+    user: "1000:1000"
+    restart: always
+
 networks:
   sanctum-network:
     driver: bridge
